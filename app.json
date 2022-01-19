@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "name": "expoDwipa",
+    "slug": "expoDwipa",
+    "version": "1.0.0",
+    "assetBundlePatterns": ["**/*"]
+  },
+  "name": "expoDwipa"
+}
