@@ -2,8 +2,11 @@ import { StatusBar } from "expo-status-bar";
 import React, { useMemo } from "react";
 import { Text } from "react-native";
 import "react-native-gesture-handler";
-import Home from "./src/screens/home";
-import Bumper from "./src/screens/bumper";
+import ObjRecognition from "./src/screens/objrecognition";
+import SplashScreen from "./src/screens/splashscreen";
+import ResultPage from "./src/screens/result";
+import Homepage from "./src/screens/homepage/homepage";
+import Tabs from "./navigation/tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import {
   createStackNavigator,
@@ -25,7 +28,8 @@ const ExampleWithHoc = gestureHandlerRootHOC(() => {
       headerStatusBarHeight: 0,
       cardShadowEnabled: false,
       headerStyle: {
-        backgroundColor: "yellow",
+        backgroundColor: "white",
+        height: 30,
       },
       cardStyle: {
         backgroundColor: "white",
@@ -41,8 +45,8 @@ const ExampleWithHoc = gestureHandlerRootHOC(() => {
         initialRouteName="ScreenOne"
       >
         <Stack.Screen
-          name="Bumper"
-          component={Bumper}
+          name="SplashScreen"
+          component={SplashScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
@@ -51,8 +55,21 @@ const ExampleWithHoc = gestureHandlerRootHOC(() => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Home"
-          component={Home}
+          name="Tabs"
+          component={Tabs}
+          options={{
+            title: "",
+            headerTintColor: "green",
+            headerShown: "false",
+            // headerStyle: {
+            //   backgroundColor: "white",
+            //   height: 80,
+            // },
+          }}
+        />
+        <Stack.Screen
+          name="ObjRecognition"
+          component={ObjRecognition}
           options={{
             title: "",
             headerTintColor: "green",
@@ -99,35 +116,38 @@ const ExampleWithHoc = gestureHandlerRootHOC(() => {
             ),
           }}
         />
+        <Stack.Screen
+          name="ResultPage"
+          component={ResultPage}
+          options={{
+            title: "",
+            headerTintColor: "green",
+            headerStyle: {
+              backgroundColor: "orange",
+              height: 100,
+            },
+            headerLeft: () => (
+              <Text
+                style={{
+                  color: "white",
+                  fontWeight: "bold",
+                  fontSize: 25,
+                  marginTop: 10,
+                  marginLeft: 15,
+                }}
+              >
+                Dwipa III
+              </Text>
+            ),
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 });
 
 const App = () => {
-  return (
-    <ExampleWithHoc></ExampleWithHoc>
-    // <NavigationContainer>
-    //   <Stack.Navigator>
-    //     <Stack.Screen
-    //       name="Bumper"
-    //       component={Bumper}
-    //       options={{ headerShown: false }}
-    //     />
-    //     <Stack.Screen
-    //       name="Home"
-    //       component={Home}
-    //       options={{
-    //         title: "Dwipa III",
-    //         headerTintColor: "white",
-    //         headerTitleStyle: {
-    //           fontWeight: "bold",
-    //         },
-    //       }}
-    //     />
-    //   </Stack.Navigator>
-    // </NavigationContainer>
-  );
+  return <ExampleWithHoc></ExampleWithHoc>;
 };
 
 export default App;

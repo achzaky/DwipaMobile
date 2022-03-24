@@ -1,14 +1,12 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useTensorFlowLoaded } from "../../hooks/useTensorFlow";
 
 export function LoadingView({ navigation }) {
-  const { isLoaded, model } = useTensorFlowLoaded();
   useEffect(() => {
-    if (isLoaded && model) {
-      navigation.replace("Home", { model });
-    }
-  }, [navigation, isLoaded, model]);
+    setTimeout(() => {
+      navigation.replace("ResultPage");
+    }, 1000);
+  }, [navigation]);
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: "column" }}>
