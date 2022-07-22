@@ -1,17 +1,15 @@
-import React, { useState } from "react";
-import { TabView, SceneMap, TabBar } from "react-native-tab-view";
-import StepIndicator from "react-native-step-indicator";
 import { Picker } from "@react-native-picker/picker";
-import {
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  Image,
-  ScrollView,
-  useWindowDimensions,
-} from "react-native";
 import { StatusBar } from "expo-status-bar";
+import React, { useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import StepIndicator from "react-native-step-indicator";
+import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 
 const FirstRoute = () => (
   <View style={{ flex: 1, backgroundColor: "#ffffff" }} />

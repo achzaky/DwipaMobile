@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { ImageBackground, StyleSheet, View } from "react-native";
-import splashscreen from "../splashscreen/dwipaSplash.png";
+import splashscreen from "../../screens/splashscreen/dwipaSplash.png";
 
-const SplashScreen = ({ navigation }) => {
+const LoadResult = ({ navigation }) => {
   useEffect(() => {
     setTimeout(() => {
-      navigation.replace("Tabs");
-    }, 5000);
+      navigation.replace("Result");
+    }, 3000);
   }, [navigation]);
   return (
     <View style={styles.container}>
@@ -36,4 +36,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SplashScreen;
+export default LoadResult;

@@ -1,14 +1,6 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
-import { render } from "react-dom";
-import {
-  ImageBackground,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  Pressable,
-} from "react-native";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "react-native-ico-material-design";
 
 var iconWidth = 26;

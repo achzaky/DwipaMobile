@@ -1,21 +1,6 @@
-import { StatusBar } from "expo-status-bar";
-import React, {
-  useCallback,
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-} from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  SafeAreaView,
-  Switch,
-  TouchableWithoutFeedback,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
 const About = ({ navigation }) => {
   const [showNavbar, setShowNavbar] = useState(false);

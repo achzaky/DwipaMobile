@@ -1,31 +1,13 @@
-import { StatusBar } from "expo-status-bar";
-import React, {
-  useCallback,
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-} from "react";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  SafeAreaView,
-  Switch,
-  TouchableWithoutFeedback,
   Image,
   ScrollView,
-  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-// import { AppLoading } from "expo-app-loading";
-// import {
-//   useFonts,
-//   Poppins_100Thins,
-//   Poppins_500Medium,
-// } from "@expo-google-fonts/poppins";
-
 const ResultPage = ({ route, navigation }) => {
   const [showNavbar, setShowNavbar] = useState(false);
   const { data } = route.params;
@@ -79,7 +61,7 @@ const ResultPage = ({ route, navigation }) => {
         <Image
           style={styles.importedImage}
           source={{
-            uri: data.image,
+            uri: data.queryImage,
           }}
         />
 

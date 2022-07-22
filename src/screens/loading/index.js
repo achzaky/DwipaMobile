@@ -1,5 +1,5 @@
+import React, { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import React, { useEffect, useState } from "react";
 
 export function LoadingView({ navigation }) {
   useEffect(() => {

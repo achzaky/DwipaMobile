@@ -1,29 +1,36 @@
+import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import { useIsFocused } from "@react-navigation/native";
+import axios from "axios";
+import { Camera } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
+  AppState,
+  Image,
+  SafeAreaView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  SafeAreaView,
-  Image,
   TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import { Camera } from "expo-camera";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import { config } from "./config";
 import CustomSwitch from "./switch";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
-import axios from "axios";
-import { useIsFocused } from "@react-navigation/native";
 
 const ObjRecognition = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
   const [bottomSheets, setBottomSheets] = useState(0);
-  const [dataOntology, getDataOntology] = useState(0);
+  const appState = useRef(AppState.currentState);
+  const [cameraActive, setCameraActive] = useState(appState.current);
   const [showNavbar, setShowNavbar] = useState(false);
-  const [type, setType] = useState(Camera.Constants.Type.back);
   const [selectedImage, setSelectedImage] = React.useState(null);
 
   const cameraRef = useRef(null);
@@ -39,6 +46,23 @@ const ObjRecognition = ({ navigation }) => {
       setShowNavbar(false);
     }
   };
+
+  /* Listening to the app state and setting the cameraActive state to true when the app is active. */
+  useLayoutEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      appState.current = nextAppState;
+
+      setCameraActive(appState.current === "active");
+    });
+
+    return () => {
+      if (subscription?.remove) {
+        subscription?.remove();
+      }
+    };
+  }, []);
+
+  /* Setting the headerRight to a TouchableOpacity component. */
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -65,6 +89,7 @@ const ObjRecognition = ({ navigation }) => {
     });
   }, []);
 
+  /* Checking if the user has given permission to use the camera. */
   useEffect(() => {
     (async () => {
       console.log("test");
@@ -85,22 +110,6 @@ const ObjRecognition = ({ navigation }) => {
     return <Text>No access to camera</Text>;
   }
 
-  // const prepareData = (photo, body = {}) => {
-  //   const data = new FormData();
-
-  //   data.append("file", {
-  //     name: photo.fileName,
-  //     type: photo.type,
-  //     uri: Platform.OS === "ios" ? photo.uri.replace("file://", "") : photo.uri,
-  //   });
-
-  //   Object.keys(body).forEach((key) => {
-  //     data.append(key, body[key]);
-  //   });
-
-  //   return data;
-  // };
-
   const prepareData = (image) => {
     const data = new FormData();
     console.log(image.uri, "image");
@@ -112,6 +121,10 @@ const ObjRecognition = ({ navigation }) => {
     return data;
   };
 
+  /**
+   * TakePicture() is an async function that takes a picture with the camera, prepares the data, and
+   * sends it to the image classifier.
+   */
   const takePicture = async () => {
     try {
       if (cameraRef) {
@@ -126,72 +139,100 @@ const ObjRecognition = ({ navigation }) => {
   };
 
   const requestImageClassifier = async (data, image) => {
-    console.log("classifier", { data, image });
-    let result = {
+    const resultPredictOnly = await axios.post(
+      "http://34.143.184.26/predictOnlySigmoid",
+      data,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: (data, error) => {
+          return data;
+        },
+      }
+    );
+    console.log({
+      data: resultPredictOnly.data.Attraction,
+      data2: resultPredictOnly.data,
+    });
+
+    let query = await new FormData();
+    await query.append(
+      "query",
+      `PREFIX dwipa:<http://www.owl-ontologies.com/ETourismBali.owl/Touring#>
+          select ?Regency ?Province
+          {?Regency dwipa:hasAttraction dwipa:${resultPredictOnly.data.Attraction}.
+          ?Regency dwipa:isTheRegencyOf ?Province}`
+    );
+    const resultOntologyQuery = await axios.post(
+      "http://34.143.184.26/ontologyQuery",
+      query,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: (query, error) => {
+          return query;
+        },
+      }
+    );
+    console.log({ data: resultOntologyQuery.data });
+
+    let queryImage = {
+      q: resultPredictOnly.data.Attraction,
+      tbm: "isch",
+      ijn: "0",
+      api_key: config.api_key,
+    };
+    const resultImageQuery = await axios.get(
+      "https://serpapi.com/search.json",
+      {
+        params: queryImage,
+      }
+    );
+    // console.log({ data: resultImageQuery.data });
+    prepareResult({
+      image,
+      resultImageQuery,
+      resultOntologyQuery,
+      resultPredictOnly,
+    });
+  };
+
+  const prepareResult = async (result) => {
+    const { resultImageQuery, resultOntologyQuery, resultPredictOnly, image } =
+      result;
+    const province =
+      await resultOntologyQuery.data.result.bindings[0].Province.value
+        .split("#")
+        .pop()
+        .split("_")
+        .join(" ");
+    const regency =
+      await resultOntologyQuery.data.result.bindings[0].Regency.value
+        .split("#")
+        .pop()
+        .split("_")
+        .join(" ");
+    result = {
       image:
         Platform.OS === "ios" ? image.uri.replace("file://", "") : image.uri,
+      province,
+      regency,
+      name: resultPredictOnly.data.Attraction.replace(
+        /([a-z](?=[A-Z]))/g,
+        "$1 "
+      ),
+      queryImage: resultImageQuery.data.images_results[0].original
+        ? resultImageQuery.data.images_results[0].original
+        : Platform.OS === "ios"
+        ? image.uri.replace("file://", "")
+        : image.uri,
     };
-    axios({
-      method: "post",
-      url: "http://34.87.166.109/predictOnly",
-      data,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "multipart/form-data",
-      },
-      transformRequest: (data, error) => {
-        return data;
-      },
-    })
-      .then(async (response) => {
-        console.log("attraction", response.data.Attraction);
-        result = {
-          ...result,
-          name: response.data.Attraction.replace(/([a-z](?=[A-Z]))/g, "$1 "),
-        };
-        const query = await new FormData();
-        await query.append(
-          "query",
-          `PREFIX dwipa:<http://www.owl-ontologies.com/ETourismBali.owl/Touring#>
-          select ?Regency ?Province
-          {?Regency dwipa:hasAttraction dwipa:${response.data.Attraction}.
-          ?Regency dwipa:isTheRegencyOf ?Province}`
-        );
-        axios("http://34.87.166.109/ontologyQuery", {
-          method: "post",
-          data: query,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "multipart/form-data",
-          },
-          transformRequest: (query, error) => {
-            return query;
-          },
-        })
-          .then(async (response) => {
-            console.log("get query", response.data);
-            const province =
-              await response.data.result.bindings[0].Province.value
-                .split("#")
-                .pop()
-                .split("_")
-                .join(" ");
-            const regency = await response.data.result.bindings[0].Regency.value
-              .split("#")
-              .pop()
-              .split("_")
-              .join(" ");
-            result = {
-              ...result,
-              province,
-              regency,
-            };
-            console.log({ result });
-            showResult(result);
-          })
-          .catch((error) => console.log("error query", error.response));
-      })
-      .catch((error) => console.log(error.response));
+    console.log({ result });
+    showResult(result);
   };
 
   const showResult = (result) => {
@@ -230,31 +271,26 @@ const ObjRecognition = ({ navigation }) => {
   };
 
   const renderCamera = () => {
-    return (
-      <Camera ref={cameraRef} style={styles.camera}>
-        <View style={styles.cameraButton}>
-          <TouchableOpacity
-            onPress={() => takePicture()}
-            // onPress={async () => {
-            //   try {
-            //     await takePicture();
-            //   } catch (err) {
-            //     console.log(err);
-            //   }
-            // }}
-          >
-            <FontAwesome5
-              name="camera"
-              size={25}
-              color="white"
-              style={{
-                height: 50,
-              }}
-            />
-          </TouchableOpacity>
-        </View>
-      </Camera>
-    );
+    if (cameraActive && isFocused) {
+      return (
+        <Camera ref={cameraRef} style={styles.camera}>
+          <View style={styles.cameraButton}>
+            <TouchableOpacity onPress={() => takePicture()}>
+              <FontAwesome5
+                name="camera"
+                size={25}
+                color="white"
+                style={{
+                  height: 50,
+                  top: 25,
+                }}
+              />
+            </TouchableOpacity>
+          </View>
+        </Camera>
+      );
+    }
+    return <></>;
   };
 
   return (
@@ -262,7 +298,7 @@ const ObjRecognition = ({ navigation }) => {
       <StatusBar style="auto" />
       <View style={styles.buttonContainer}>
         {/* {bottomSheets === 0 ? renderCamera() : null} */}
-        {isFocused && renderCamera()}
+        {renderCamera()}
         <BottomSheet
           backgroundStyle={{
             backgroundColor: "white",
@@ -428,7 +464,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
-    bottom: "20%",
+    bottom: "10%",
     position: "absolute",
   },
   buttonContainer: {

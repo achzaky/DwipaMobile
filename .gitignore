@@ -53,3 +53,6 @@ buck-out/
 .expo/
 web-build/
 dist/
+
+# Config Obj Recognition
+src/screens/objrecognition/config.js

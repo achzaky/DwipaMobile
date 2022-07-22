@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 const CustomSwitch = ({
   navigation,
